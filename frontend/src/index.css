@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Custom reusable classes */
+@layer components {
+  .input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+  }
+
+  .error {
+    color: #dc2626;
+    font-size: 0.875rem;
+  }
+}
