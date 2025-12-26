@@ -109,7 +109,7 @@ Make sure you have these installed:
 **1. Clone the repo**
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Satyanagapraveen/multitenant-saas-platform-23A91A12A5
 cd MultiTenant-SaaS
 ```
 
@@ -340,6 +340,4 @@ MultiTenant-SaaS/
 
 ---
 
-## License
 
-MIT License - do whatever you want with it.
