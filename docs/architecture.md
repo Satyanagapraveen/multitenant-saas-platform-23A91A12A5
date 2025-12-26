@@ -18,65 +18,62 @@
 ## 1. System Architecture Overview
 
 ### High-Level Architecture Diagram
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        Browser["Web Browser"]
+        subgraph ReactApp["React SPA (Vite)"]
+            Auth["Auth Pages"]
+            Dashboard["Dashboard Page"]
+            Projects["Projects Pages"]
+            Tasks["Tasks (List/Kanban)"]
+            Client[["Axios HTTP Client<br/>(JWT in Headers)"]]
+            
+            Auth --> Client
+            Dashboard --> Client
+            Projects --> Client
+            Tasks --> Client
+        end
+        Browser --> ReactApp
+    end
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              CLIENT LAYER                                    │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                         Web Browser                                   │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐    │   │
-│  │  │                    React SPA (Vite)                          │    │   │
-│  │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────────────┐   │    │   │
-│  │  │  │  Auth   │ │Dashboard│ │Projects │ │     Tasks       │   │    │   │
-│  │  │  │ Pages   │ │  Page   │ │  Pages  │ │ (List/Kanban)   │   │    │   │
-│  │  │  └─────────┘ └─────────┘ └─────────┘ └─────────────────┘   │    │   │
-│  │  │         │           │           │              │            │    │   │
-│  │  │         └───────────┴───────────┴──────────────┘            │    │   │
-│  │  │                          │                                   │    │   │
-│  │  │                    Axios HTTP Client                         │    │   │
-│  │  │                    (JWT in Headers)                          │    │   │
-│  │  └─────────────────────────────────────────────────────────────┘    │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      │ HTTPS (Port 5173 dev / 443 prod)
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              API LAYER                                       │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                  Django REST Framework API                           │   │
-│  │                      (Port 8000)                                     │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐    │   │
-│  │  │                    Middleware Stack                          │    │   │
-│  │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐   │    │   │
-│  │  │  │   CORS   │ │   JWT    │ │  Tenant  │ │    Audit     │   │    │   │
-│  │  │  │ Handler  │ │   Auth   │ │ Isolation│ │   Logging    │   │    │   │
-│  │  │  └──────────┘ └──────────┘ └──────────┘ └──────────────┘   │    │   │
-│  │  └─────────────────────────────────────────────────────────────┘    │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐    │   │
-│  │  │                      API Endpoints                           │    │   │
-│  │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌───────┐ │    │   │
-│  │  │  │  Auth   │ │ Tenants │ │  Users  │ │Projects │ │ Tasks │ │    │   │
-│  │  │  │  /auth  │ │/tenants │ │ /users  │ │/projects│ │/tasks │ │    │   │
-│  │  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └───────┘ │    │   │
-│  │  └─────────────────────────────────────────────────────────────┘    │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐    │   │
-│  │  │                    Django ORM Layer                          │    │   │
-│  │  └─────────────────────────────────────────────────────────────┘    │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      │ SQL Queries
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              DATA LAYER                                      │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │              SQLite (Dev) / PostgreSQL (Prod)                        │   │
-│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌──────────────┐  │   │
-│  │  │ tenants │ │  users  │ │projects │ │  tasks  │ │  audit_logs  │  │   │
-│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └──────────────┘  │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
+    subgraph "API Layer"
+        subgraph DjangoAPI["Django REST Framework API"]
+            subgraph Middleware["Middleware Stack"]
+                CORS["CORS Handler"]
+                JWT["JWT Auth"]
+                Tenant["Tenant Isolation"]
+                Audit["Audit Logging"]
+            end
+            
+            subgraph Endpoints["API Endpoints"]
+                AuthEP["/auth<br/>Authentication"]
+                TenantsEP["/tenants<br/>Tenant Management"]
+                UsersEP["/users<br/>User Management"]
+                ProjectsEP["/projects<br/>Project Management"]
+                TasksEP["/tasks<br/>Task Management"]
+            end
+            
+            ORM["Django ORM Layer"]
+            
+            Middleware --> Endpoints
+            Endpoints --> ORM
+        end
+    end
+    
+    subgraph "Data Layer"
+        subgraph Database["SQLite (Dev) / PostgreSQL (Prod)"]
+            TenantsDB["tenants table"]
+            UsersDB["users table"]
+            ProjectsDB["projects table"]
+            TasksDB["tasks table"]
+            AuditDB["audit_logs table"]
+        end
+    end
+
+    Client -- "HTTPS<br/>(Port 5173 dev / 443 prod)" --> DjangoAPI
+    ORM -- "SQL Queries" --> Database
+
 ```
 
 ### Architecture Principles
@@ -132,7 +129,74 @@ frontend/
 ├── vite.config.js
 └── tailwind.config.js
 ```
-
+```mermaid
+graph TD
+    Root["frontend/"]
+    
+    subgraph "Public Assets"
+        Public["public/"]
+    end
+    
+    subgraph "Source Code (src/)"
+        API["api/axios.js<br/>Axios instance with interceptors"]
+        
+        subgraph Auth["auth/"]
+            Login["Login.jsx"]
+            Register["Register.jsx"]
+        end
+        
+        subgraph Components["components/"]
+            Navbar["Navbar.jsx"]
+            ProtectedRoute["ProtectedRoute.jsx"]
+            KanbanBoard["KanbanBoard.jsx"]
+        end
+        
+        Context["context/AuthContext.jsx"]
+        Layouts["layouts/AppLayout.jsx"]
+        
+        subgraph Pages["pages/"]
+            Dashboard["Dashboard.jsx"]
+            
+            subgraph ProjectsPages["projects/"]
+                ProjectsList["ProjectsList.jsx"]
+                ProjectDetails["ProjectDetails.jsx"]
+                CreateProject["CreateProjectModal.jsx"]
+                EditProject["EditProjectModal.jsx"]
+            end
+            
+            subgraph TasksPages["tasks/"]
+                MyTasks["MyTasks.jsx"]
+                CreateTask["CreateTaskModal.jsx"]
+                EditTask["EditTaskModal.jsx"]
+            end
+            
+            subgraph UsersPages["users/"]
+                UsersList["UsersList.jsx"]
+                CreateUser["CreateUserModal.jsx"]
+                EditUser["EditUserModal.jsx"]
+            end
+        end
+        
+        App["App.jsx<br/>Route definitions"]
+        Main["main.jsx<br/>React entry point"]
+        Styles["index.css<br/>Tailwind CSS imports"]
+    end
+    
+    Root --> Public
+    Root --> Pages
+    
+    subgraph "Configuration Files"
+        HTML["index.html"]
+        Package["package.json"]
+        Vite["vite.config.js"]
+        Tailwind["tailwind.config.js"]
+    end
+    
+    Root --> HTML
+    Root --> Package
+    Root --> Vite
+    Root --> Tailwind
+```
 ### Backend Architecture (Django)
 
 ```
@@ -175,6 +239,72 @@ core/
 └── db.sqlite3                # SQLite database (dev only)
 ```
 
+```mermaid
+graph TD
+    Root["core/"]
+    
+    subgraph "Project Configuration"
+        Settings["core/settings.py<br/>Configuration"]
+        Urls["core/urls.py<br/>Root URL routing"]
+        WSGI["core/wsgi.py<br/>WSGI entry point"]
+    end
+    
+    subgraph "Application Modules"
+        subgraph Accounts["accounts/"]
+            AccModels["models.py<br/>User model"]
+            AccViews["views.py<br/>Auth & user views"]
+            AccSerializers["serializers.py<br/>DRF serializers"]
+            AccUrls["urls.py<br/>Auth routes"]
+            AccPermissions["permissions.py<br/>Custom permissions"]
+            
+            subgraph Commands["management/commands/"]
+                SeedData["seed_data.py<br/>Database seeding"]
+            end
+        end
+        
+        subgraph Tenants["tenants/"]
+            TenantModels["models.py<br/>Tenant model"]
+            TenantViews["views.py<br/>Tenant views"]
+            TenantSerializers["serializers.py<br/>Tenant serializers"]
+            TenantUrls["urls.py<br/>Tenant routes"]
+        end
+        
+        subgraph Projects["projects/"]
+            ProjectModels["models.py<br/>Project model"]
+            ProjectViews["views.py<br/>Project views"]
+            ProjectSerializers["serializers.py<br/>Project serializers"]
+            ProjectUrls["urls.py<br/>Project routes"]
+        end
+        
+        subgraph Tasks["tasks/"]
+            TaskModels["models.py<br/>Task model"]
+            TaskViews["views.py<br/>Task views"]
+            TaskSerializers["serializers.py<br/>Task serializers"]
+            TaskUrls["urls.py<br/>Task routes"]
+        end
+        
+        subgraph Audit["audit_logs/"]
+            AuditModels["models.py<br/>AuditLog model"]
+            AuditViews["views.py<br/>Audit log views"]
+            AuditSerializers["serializers.py<br/>Audit serializers"]
+            AuditUrls["urls.py<br/>Audit routes"]
+            AuditUtils["utils.py<br/>Logging utility"]
+        end
+    end
+    
+    Manage["manage.py"]
+    DB["db.sqlite3<br/>SQLite database (dev only)"]
+    
+    Root --> Settings
+    Root --> Accounts
+    Root --> Tenants
+    Root --> Projects
+    Root --> Tasks
+    Root --> Audit
+    Root --> Manage
+    Root --> DB
+
+```
 ---
 
 ## 3. Data Flow Diagrams
@@ -195,6 +325,30 @@ core/
 │   JWT    │     │ + JWT Header │     │    JWT    │     │   Data   │
 └──────────┘     └──────────────┘     └───────────┘     └──────────┘
 ```
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as API Endpoint
+    participant Auth as Auth Service
+    participant JWT as JWT Service
+    
+    Client->>API: POST /login<br/>{email, password}
+    API->>Auth: Validate Credentials
+    Auth-->>API: User Info
+    API->>JWT: Issue JWT Token
+    JWT-->>API: JWT Token
+    API-->>Client: {token, user_data}
+    
+    Note over Client,JWT: Token Stored in localStorage
+    
+    Client->>API: API Request<br/>+ JWT Header
+    API->>JWT: Validate JWT
+    JWT-->>API: User/Tenant Info
+    API->>Database: Query Data<br/>(with tenant filter)
+    Database-->>API: Filtered Data
+    API-->>Client: Response Data
+```
+
 
 ### Multi-Tenant Data Access Flow
 
@@ -265,6 +419,60 @@ core/
 | **Audit**    | `/api/audit-logs/`            | GET    | Yes  | List audit logs                |
 
 ---
+
+```mermaid
+graph LR
+    subgraph "API Modules & Endpoints"
+        subgraph Auth["Auth Module"]
+            A1["POST /api/auth/register-tenant"]
+            A2["POST /api/auth/login"]
+            A3["POST /api/auth/logout"]
+            A4["GET /api/auth/me"]
+        end
+        
+        subgraph Tenants["Tenants Module"]
+            T1["GET /api/tenants/"]
+            T2["GET /api/tenants/:id"]
+            T3["PUT /api/tenants/:id"]
+        end
+        
+        subgraph Users["Users Module"]
+            U1["POST /api/tenants/:id/users"]
+            U2["GET /api/tenants/:id/users/list"]
+            U3["PUT /api/users/:id"]
+            U4["DELETE /api/users/:id"]
+        end
+        
+        subgraph Projects["Projects Module"]
+            P1["GET /api/projects"]
+            P2["POST /api/projects"]
+            P3["GET /api/projects/:id"]
+            P4["PUT /api/projects/:id"]
+            P5["DELETE /api/projects/:id"]
+        end
+        
+        subgraph Tasks["Tasks Module"]
+            K1["GET /api/projects/:id/tasks"]
+            K2["POST /api/projects/:id/tasks"]
+            K3["PUT /api/tasks/:id"]
+            K4["PATCH /api/tasks/:id/status"]
+            K5["DELETE /api/tasks/:id/delete"]
+            K6["GET /api/tasks"]
+        end
+        
+        subgraph Audit["Audit Module"]
+            L1["GET /api/audit-logs/"]
+        end
+    end
+    
+    style Auth fill:#e3f2fd
+    style Tenants fill:#f3e5f5
+    style Users fill:#e8f5e8
+    style Projects fill:#fff3e0
+    style Tasks fill:#fce4ec
+    style Audit fill:#e0f2f1
+```
+
 
 ## 5. Database Schema
 
@@ -359,7 +567,7 @@ VITE_API_URL=http://127.0.0.1:8000/api
 #### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Satyanagapraveen/multitenant-saas-platform-23A91A12A5
 cd MultiTenant-Saas
 ```
 
