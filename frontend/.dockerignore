@@ -1,0 +1,31 @@
+# Dependencies
+
+node_modules/
+
+# Build
+
+dist/
+build/
+
+# IDE
+
+.vscode/
+.idea/
+_.swp
+_.swo
+
+# Git
+
+.git/
+.gitignore
+
+# Docker
+
+Dockerfile
+.dockerignore
+
+# Misc
+
+\*.md
+.env.example
+.env
