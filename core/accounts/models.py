@@ -37,18 +37,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         on_delete=models.CASCADE
     )
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = UserManager() 
 
-    # REQUIRED BY DJANGO
-    USERNAME_FIELD = 'id'
-    REQUIRED_FIELDS = []
+    # REQUIRED BY DJANGO - use email as the username field
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['full_name']
 
     class Meta:
         unique_together = ('tenant', 'email')
