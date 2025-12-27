@@ -1,7 +1,7 @@
 {
   "testCredentials": {
     "superAdmin": {
-      "email": "superadmin@system.com",
+      "email": "superadmin1@system.com",
       "password": "Admin@123",
       "role": "super_admin",
       "tenantId": null
