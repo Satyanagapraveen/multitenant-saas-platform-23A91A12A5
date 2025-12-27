@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Register from "./auth/Register";
 import Login from "./auth/Login";
 import Dashboard from "./pages/Dashboard";
@@ -7,11 +7,12 @@ import ProjectsList from "./pages/projects/ProjectsList";
 import AppLayout from "./layouts/AppLayout";
 import ProjectDetails from "./pages/projects/ProjectDetails";
 import UsersList from "./pages/users/UsersList";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
 
