@@ -1,23 +1,30 @@
-# Frontend Dockerfile for React/Vite Multi-Tenant SaaS
-FROM node:20-alpine
+# ---------- Build stage ----------
+FROM node:20-alpine AS build
 
-# Set work directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
 # Install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Copy project files
+# Copy source code and build
 COPY . .
+RUN npm run build
 
-# Expose port
+
+# ---------- Production stage ----------
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install a lightweight static server
+RUN npm install -g serve
+
+# Copy the built files from build stage
+COPY --from=build /app/dist ./dist
+
+# Expose required port
 EXPOSE 3000
 
-# Set environment variable for API URL (will be overridden by docker-compose)
-ENV VITE_API_URL=http://localhost:5000/api
-
-# Run Vite dev server on port 3000
-CMD ["npm", "run", "dev"]
+# Serve the production build
+CMD ["serve", "-s", "dist", "-l", "3000"]

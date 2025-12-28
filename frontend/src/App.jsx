@@ -12,53 +12,57 @@ import LandingPage from "./pages/LandingPage";
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
+  {/* PUBLIC */}
+  <Route path="/" element={<LandingPage />} />
+  <Route path="/login" element={<Login />} />
+  <Route path="/register" element={<Register />} />
 
-      <Route
-        path="/projects"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <ProjectsList />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/projects/:projectId"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <ProjectDetails />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+  {/* PROTECTED */}
+  <Route
+    path="/dashboard"
+    element={
+      <ProtectedRoute>
+        <AppLayout>
+          <Dashboard />
+        </AppLayout>
+      </ProtectedRoute>
+    }
+  />
 
-      <Route
-        path="/users"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <UsersList />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
+  <Route
+    path="/projects"
+    element={
+      <ProtectedRoute>
+        <AppLayout>
+          <ProjectsList />
+        </AppLayout>
+      </ProtectedRoute>
+    }
+  />
 
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <Dashboard />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+  <Route
+    path="/projects/:projectId"
+    element={
+      <ProtectedRoute>
+        <AppLayout>
+          <ProjectDetails />
+        </AppLayout>
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/users"
+    element={
+      <ProtectedRoute>
+        <AppLayout>
+          <UsersList />
+        </AppLayout>
+      </ProtectedRoute>
+    }
+  />
+</Routes>
+
   );
 }
 

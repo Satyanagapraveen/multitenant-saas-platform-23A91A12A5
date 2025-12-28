@@ -5,26 +5,14 @@ echo "=== Multi-Tenant SaaS Backend Startup ==="
 
 # Wait for database to be ready
 echo "Waiting for database..."
-while ! python -c "
-import os
-import psycopg2
-try:
-    conn = psycopg2.connect(
-        host=os.environ.get('DB_HOST', 'localhost'),
-        port=os.environ.get('DB_PORT', '5432'),
-        dbname=os.environ.get('DB_NAME', 'saas_db'),
-        user=os.environ.get('DB_USER', 'postgres'),
-        password=os.environ.get('DB_PASSWORD', 'postgres')
-    )
-    conn.close()
-    exit(0)
-except:
-    exit(1)
-" 2>/dev/null; do
-    echo "Database not ready, waiting 2 seconds..."
-    sleep 2
+
+until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER"; do
+  echo "Database not ready, waiting 2 seconds..."
+  sleep 2
 done
+
 echo "✓ Database is ready!"
+
 
 # Run migrations
 echo "Running database migrations..."
@@ -33,7 +21,8 @@ echo "✓ Migrations complete!"
 
 # Load seed data
 echo "Loading seed data..."
-python manage.py seed_data
+python manage.py seed_data || echo "Seed data already exists, skipping"
+
 echo "✓ Seed data loaded!"
 
 # Verify seed data
