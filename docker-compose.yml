@@ -50,6 +50,9 @@ services:
       start_period: 60s
     networks:
       - saas_network
+    volumes:
+    - ./core/staticfiles:/app/staticfiles
+
 
   frontend:
     build: ./frontend

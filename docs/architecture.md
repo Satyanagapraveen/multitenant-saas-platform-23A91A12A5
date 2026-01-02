@@ -314,7 +314,7 @@ graph TD
 ```
 ┌──────────┐     ┌──────────────┐     ┌───────────┐     ┌──────────┐
 │  Client  │────>│ POST /login  │────>│  Validate │────>│  Issue   │
-│          │     │              │     │ Credentials│     │   JWT    │
+│          │     │              │     │ Credentials│    │   JWT    │
 └──────────┘     └──────────────┘     └───────────┘     └──────────┘
      │                                                        │
      │  ┌─────────────────────────────────────────────────────┘
@@ -354,33 +354,33 @@ sequenceDiagram
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                        API Request with JWT                               │
+│                        API Request with JWT                              │
 └──────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                     1. JWT Middleware                                     │
-│                     - Validate token                                      │
+│                     1. JWT Middleware                                    │
+│                     - Validate token                                     │
 │                     - Extract user_id, tenant_id, role                   │
 └──────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                     2. Permission Check                                   │
+│                     2. Permission Check                                  │
 │                     - Verify role allows action                          │
 │                     - Check resource ownership                           │
 └──────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                     3. Tenant Isolation                                   │
+│                     3. Tenant Isolation                                  │
 │                     - Filter query by tenant_id                          │
 │                     - Ensure data belongs to user's tenant               │
 └──────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                     4. Database Query                                     │
+│                     4. Database Query                                    │
 │                     - Execute with tenant_id filter                      │
 │                     - Return only tenant's data                          │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -486,7 +486,7 @@ graph LR
 │ name            │   │   │ tenant_id (FK)  │◄──┤   │ tenant_id (FK)  │◄──┐
 │ subdomain (UQ)  │   │   │ email           │   │   │ name            │   │
 │ status          │   │   │ password_hash   │   │   │ description     │   │
-│ subscription_plan│   │   │ full_name       │   │   │ status          │   │
+│subscription_plan│   │   │ full_name       │   │   │ status          │   │
 │ max_users       │   └──►│ role            │   │   │ created_by (FK) │◄──┤
 │ max_projects    │       │ is_active       │   │   │ created_at      │   │
 │ created_at      │       │ created_at      │   │   │ updated_at      │   │

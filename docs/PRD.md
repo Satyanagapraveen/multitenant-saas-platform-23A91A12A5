@@ -281,9 +281,9 @@ The End User is a regular team member who uses the platform for daily task manag
 
 | Permission             | Super Admin | Tenant Admin  | User     |
 | ---------------------- | ----------- | ------------- | -------- |
-| Manage All Tenants     | ✓           | ✗             | ✗        |
-| View Tenant List       | ✓           | ✗             | ✗        |
-| Manage Users           | ✓           | Within Tenant | ✗        |
+| Manage All Tenants     | ✓           | ✗            | ✗       |
+| View Tenant List       | ✓           | ✗            | ✗       |
+| Manage Users           | ✓           |Within Tenant  |  ✗        |
 | Create Projects        | ✓           | ✓             | ✓        |
 | Delete Projects        | ✓           | ✓             | Own Only |
 | Create Tasks           | ✓           | ✓             | ✓        |

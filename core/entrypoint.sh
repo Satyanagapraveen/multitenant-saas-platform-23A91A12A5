@@ -44,7 +44,7 @@ projects = Project.objects.count()
 tasks = Task.objects.count()
 
 # Check super admin exists
-super_admin = User.objects.filter(email='superadmin@system.com', role='super_admin').exists()
+super_admin = User.objects.filter(role='super_admin').exists()
 
 print(f'  Users: {users}')
 print(f'  Tenants: {tenants}')

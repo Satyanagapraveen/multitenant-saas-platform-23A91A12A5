@@ -189,7 +189,7 @@ After running `python manage.py seed_data` or `docker-compose up`, you can login
 
 | Role         | Email                 | Password  | Subdomain     |
 | ------------ | --------------------- | --------- | ------------- |
-| Super Admin  | superadmin1@system.com | Admin@123 | (leave empty) |
+| Super Admin  | superadmin@system.com | Admin@123 | (leave empty) |
 | Tenant Admin | admin@demo.com        | Demo@123  | demo          |
 | Regular User | user1@demo.com        | User@123  | demo          |
 | Regular User | user2@demo.com        | User@123  | demo          |

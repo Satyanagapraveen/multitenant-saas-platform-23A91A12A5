@@ -46,6 +46,8 @@ class Command(BaseCommand):
                     'full_name': 'Super Admin',
                     'role': 'super_admin',
                     'is_active': True,
+                    'is_staff': True,
+                    'is_superuser': True,
                     'tenant': None
                 }
             )
@@ -54,7 +56,11 @@ class Command(BaseCommand):
                 super_admin.save()
                 self.stdout.write(self.style.SUCCESS('✓ Super Admin created'))
             else:
-                self.stdout.write('  Super Admin already exists')
+                # Ensure existing superadmin has correct flags
+                super_admin.is_staff = True
+                super_admin.is_superuser = True
+                super_admin.save()
+                self.stdout.write('  Super Admin already exists (flags updated)')
 
             # 2. Create Demo Tenant
             demo_tenant, created = Tenant.objects.get_or_create(
