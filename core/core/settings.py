@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 
+# Load environment variables from .env file for local development
+# In Docker, env vars are set via docker-compose.yml
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,14 +25,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY: SECRET_KEY must be set via environment variable in production
-# The default value is ONLY for local development
+# SECURITY: SECRET_KEY is REQUIRED from environment variable
+# Docker: Automatically set via docker-compose.yml
+# Local Dev: export SECRET_KEY='your-secret-key' or create .env file
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
-    # Default for local development only - NEVER use in production
-    import warnings
-    warnings.warn("SECRET_KEY not set. Using insecure default for development only.")
-    SECRET_KEY = "django-insecure-dev-only-key-do-not-use-in-production-change-me"
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured(
+        "The SECRET_KEY environment variable is not set. "
+        "Set it in docker-compose.yml (already configured) or export SECRET_KEY='your-key'"
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
