@@ -1,9 +1,12 @@
 # Environment files (NEVER commit these - secrets!)
-# All env vars for Docker are in docker-compose.yml
 .env
 .env.local
 .env.production
+.env.development
 *.env
+!.env.example
+core/.env
+frontend/.env
 
 # Python
 __pycache__/

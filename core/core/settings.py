@@ -26,14 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY: SECRET_KEY is REQUIRED from environment variable
-# Docker: Automatically set via docker-compose.yml
-# Local Dev: export SECRET_KEY='your-secret-key' or create .env file
+# Docker: Set in .env file (loaded via docker-compose env_file)
+# Local Dev: Copy .env.example to .env and set your secret key
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
     from django.core.exceptions import ImproperlyConfigured
     raise ImproperlyConfigured(
         "The SECRET_KEY environment variable is not set. "
-        "Set it in docker-compose.yml (already configured) or export SECRET_KEY='your-key'"
+        "Copy .env.example to .env and set a secure SECRET_KEY value."
     )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -112,10 +112,10 @@ if os.environ.get('DB_HOST'):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get('DB_NAME', 'saas_db'),
-            "USER": os.environ.get('DB_USER', 'postgres'),
-            "PASSWORD": os.environ.get('DB_PASSWORD', 'postgres'),
-            "HOST": os.environ.get('DB_HOST', 'localhost'),
+            "NAME": os.environ.get('DB_NAME'),
+            "USER": os.environ.get('DB_USER'),
+            "PASSWORD": os.environ.get('DB_PASSWORD'),
+            "HOST": os.environ.get('DB_HOST'),
             "PORT": os.environ.get('DB_PORT', '5432'),
         }
     }
