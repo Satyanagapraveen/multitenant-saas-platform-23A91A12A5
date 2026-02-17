@@ -93,7 +93,89 @@ def update_or_delete_user(request, user_id):
 
 
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def tenant_users(request, tenant_id):
+    """
+    GET: List all users in tenant
+    POST: Add new user to tenant (tenant_admin only)
+    """
+    current_user = request.user
+    is_super_admin = current_user.role == 'super_admin'
+
+    # Tenant isolation (super admin can access all)
+    if not is_super_admin:
+        if not current_user.tenant or current_user.tenant.id != tenant_id:
+            return Response({"message": "Unauthorized"}, status=403)
+
+    # GET - List Users
+    if request.method == 'GET':
+        from tenants.models import Tenant
+        try:
+            tenant = Tenant.objects.get(id=tenant_id)
+        except Tenant.DoesNotExist:
+            return Response({"message": "Tenant not found"}, status=404)
+        
+        qs = User.objects.filter(tenant=tenant)
+
+        # Search by email or full name
+        search = request.GET.get('search')
+        if search:
+            qs = qs.filter(
+                Q(email__icontains=search) |
+                Q(full_name__icontains=search)
+            )
+
+        # Filter by role
+        role = request.GET.get('role')
+        if role:
+            qs = qs.filter(role=role)
+
+        qs = qs.order_by('-created_at')
+
+        return Response({
+            "success": True,
+            "data": UserListSerializer(qs, many=True).data,
+            "total": qs.count()
+        })
+
+    # POST - Add User
+    if request.method == 'POST':
+        if current_user.role != 'tenant_admin' and not is_super_admin:
+            return Response({"message": "Not authorized"}, status=403)
+
+        from tenants.models import Tenant
+        try:
+            tenant = Tenant.objects.get(id=tenant_id)
+        except Tenant.DoesNotExist:
+            return Response({"message": "Tenant not found"}, status=404)
+
+        # User limit check
+        if User.objects.filter(tenant=tenant).count() >= tenant.max_users:
+            return Response({"message": "User limit reached"}, status=403)
+
+        # Email uniqueness check
+        if User.objects.filter(email=request.data.get('email'), tenant=tenant).exists():
+            return Response(
+                {"message": "Email already exists in this tenant"},
+                status=409
+            )
+
+        serializer = CreateUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_user = serializer.save(tenant=tenant)
+
+        return Response({
+            "success": True,
+            "message": "User created successfully",
+            "data": UserListSerializer(new_user).data
+        }, status=201)
+
+
+# Keep legacy endpoint for backward compatibility
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_user_to_tenant(request, tenant_id):
     user = request.user
 
@@ -132,12 +214,20 @@ def add_user_to_tenant(request, tenant_id):
 @permission_classes([IsAuthenticated])
 def list_tenant_users(request, tenant_id):
     current_user = request.user
+    is_super_admin = current_user.role == 'super_admin'
 
-    # ✅ Tenant isolation
-    if not current_user.tenant or current_user.tenant.id != tenant_id:
-        return Response({"message": "Unauthorized"}, status=403)
+    # Tenant isolation (super admin can access all)
+    if not is_super_admin:
+        if not current_user.tenant or current_user.tenant.id != tenant_id:
+            return Response({"message": "Unauthorized"}, status=403)
 
-    qs = User.objects.filter(tenant=current_user.tenant)
+    from tenants.models import Tenant
+    try:
+        tenant = Tenant.objects.get(id=tenant_id)
+    except Tenant.DoesNotExist:
+        return Response({"message": "Tenant not found"}, status=404)
+
+    qs = User.objects.filter(tenant=tenant)
 
     # 🔍 Search by email or full name
     search = request.GET.get('search')
@@ -156,10 +246,8 @@ def list_tenant_users(request, tenant_id):
 
     return Response({
         "success": True,
-        "data": {
-            "users": UserListSerializer(qs, many=True).data,
-            "total": qs.count()
-        }
+        "data": UserListSerializer(qs, many=True).data,
+        "total": qs.count()
     })
 
 

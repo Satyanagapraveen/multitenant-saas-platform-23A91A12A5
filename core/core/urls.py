@@ -76,7 +76,7 @@ urlpatterns = [
     path('api/', include('accounts.urls')),
     path('api/', include('projects.urls')),
     path('api/', include('tasks.urls')),
-    path('api/tenants/', include('tenants.urls')),
+    path('api/tenants', include('tenants.urls')),  # Without trailing slash for /api/tenants
     path('api/audit-logs/', include('audit_logs.urls')),
 ]
 
