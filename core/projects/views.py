@@ -12,10 +12,18 @@ from projects.serializers import (
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def projects_list_create(request):
-    tenant = request.user.tenant
+    user = request.user
+    tenant = user.tenant
+    is_super_admin = user.role == 'super_admin'
 
     # ================= CREATE PROJECT =================
     if request.method == 'POST':
+        # Super admin cannot create projects (no tenant)
+        if is_super_admin:
+            return Response(
+                {"message": "Super admin cannot create projects"},
+                status=403
+            )
         if Project.objects.filter(tenant=tenant).count() >= tenant.max_projects:
             return Response(
                 {"message": "Project limit reached"},
@@ -43,13 +51,23 @@ def projects_list_create(request):
         }, status=201)
 
     # ================= LIST PROJECTS =================
-    projects = Project.objects.filter(tenant=tenant).annotate(
+    # Super admin sees ALL projects across all tenants
+    if is_super_admin:
+        projects = Project.objects.all().annotate(
+            task_count=Count('tasks'),
+            completed_task_count=Count(
+                'tasks',
+                filter=Q(tasks__status='completed')
+            )
+        ).order_by('-created_at')
+    else:
+        projects = Project.objects.filter(tenant=tenant).annotate(
         task_count=Count('tasks'),
         completed_task_count=Count(
             'tasks',
             filter=Q(tasks__status='completed')
         )
-    ).order_by('-created_at')
+        ).order_by('-created_at')
 
     serializer = ProjectListSerializer(projects, many=True)
 
@@ -68,9 +86,10 @@ def projects_list_create(request):
 @permission_classes([IsAuthenticated])
 def update_or_delete_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    is_super_admin = request.user.role == 'super_admin'
 
-    # Tenant isolation
-    if project.tenant != request.user.tenant:
+    # Tenant isolation (super admin can access all)
+    if not is_super_admin and project.tenant != request.user.tenant:
         return Response({"message": "Forbidden"}, status=403)
 
     # ================= GET PROJECT DETAILS =================

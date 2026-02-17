@@ -18,9 +18,10 @@ from accounts.models import User
 @permission_classes([IsAuthenticated])
 def project_tasks(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    is_super_admin = request.user.role == 'super_admin'
 
-    # Tenant isolation
-    if project.tenant != request.user.tenant:
+    # Tenant isolation (super admin can access all)
+    if not is_super_admin and project.tenant != request.user.tenant:
         return Response({"message": "Forbidden"}, status=403)
 
     # ---------- CREATE TASK ----------
@@ -80,9 +81,10 @@ def project_tasks(request, project_id):
 @permission_classes([IsAuthenticated])
 def update_task_status(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    is_super_admin = request.user.role == 'super_admin'
 
-    # Tenant isolation
-    if task.tenant != request.user.tenant:
+    # Tenant isolation (super admin can access all)
+    if not is_super_admin and task.tenant != request.user.tenant:
         return Response({"message": "Forbidden"}, status=403)
 
     # Permission: Only assigned user or admin can update status
@@ -117,9 +119,10 @@ def update_task_status(request, task_id):
 @permission_classes([IsAuthenticated])
 def update_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    is_super_admin = request.user.role == 'super_admin'
 
-    # Tenant isolation
-    if task.tenant != request.user.tenant:
+    # Tenant isolation (super admin can access all)
+    if not is_super_admin and task.tenant != request.user.tenant:
         return Response({"message": "Forbidden"}, status=403)
 
     # Permission: Only admin can fully edit tasks (title, description, assignee, etc.)
@@ -154,9 +157,10 @@ def update_task(request, task_id):
 @permission_classes([IsAuthenticated])
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
+    is_super_admin = request.user.role == 'super_admin'
 
-    # Tenant isolation
-    if task.tenant != request.user.tenant:
+    # Tenant isolation (super admin can access all)
+    if not is_super_admin and task.tenant != request.user.tenant:
         return Response({"message": "Forbidden"}, status=403)
 
     # Permission: Only admin can delete tasks
@@ -178,10 +182,17 @@ def delete_task(request, task_id):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_tasks(request):
-    qs = Task.objects.filter(
-        tenant=request.user.tenant,
-        assigned_to=request.user
-    )
+    user = request.user
+    is_super_admin = user.role == 'super_admin'
+    
+    # Super admin sees ALL tasks across all tenants
+    if is_super_admin:
+        qs = Task.objects.all()
+    else:
+        qs = Task.objects.filter(
+            tenant=user.tenant,
+            assigned_to=user
+        )
 
     status = request.GET.get('status')
     if status:
