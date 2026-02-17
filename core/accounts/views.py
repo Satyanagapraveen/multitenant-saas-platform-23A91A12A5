@@ -213,8 +213,40 @@ def login(request):
 
     email = serializer.validated_data['email']
     password = serializer.validated_data['password']
-    subdomain = serializer.validated_data['tenantSubdomain']
+    subdomain = serializer.validated_data.get('tenantSubdomain', '')
 
+    # Handle super admin login (subdomain = 'system' or empty for super_admin)
+    if subdomain == 'system' or subdomain == '':
+        # Try to find super_admin user first
+        user = User.objects.filter(
+            email=email,
+            role='super_admin',
+            is_active=True
+        ).first()
+        
+        if user and user.check_password(password):
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "success": True,
+                "data": {
+                    "id": str(user.id),
+                    "email": user.email,
+                    "fullName": user.full_name,
+                    "role": user.role,
+                    "tenantId": None,
+                    "token": str(refresh.access_token),
+                    "expiresIn": 86400
+                }
+            })
+        
+        # If no super admin found with 'system' subdomain, return error
+        if subdomain == 'system':
+            return Response(
+                {"message": "Invalid credentials"},
+                status=401
+            )
+
+    # Regular tenant-based login
     try:
         tenant = Tenant.objects.get(subdomain=subdomain)
     except Tenant.DoesNotExist:

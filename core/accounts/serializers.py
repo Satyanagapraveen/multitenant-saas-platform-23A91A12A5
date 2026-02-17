@@ -44,4 +44,4 @@ class TenantRegisterSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
-    tenantSubdomain = serializers.CharField()
+    tenantSubdomain = serializers.CharField(required=False, allow_blank=True, default='')
